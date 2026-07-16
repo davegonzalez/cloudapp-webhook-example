@@ -1,0 +1,6 @@
+# Copy this file to `.dev.vars` for local testing (Wrangler/Astro loads it).
+# Do NOT commit `.dev.vars`.
+#
+# The signing secret Webflow returns when the webhook is created (secretKey),
+# or the OAuth app's client secret when the webhook is app-owned.
+WEBFLOW_WEBHOOK_SECRET=replace-with-webhook-signing-secret

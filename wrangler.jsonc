@@ -1,0 +1,20 @@
+{
+  // Minimal Wrangler config for `npm run preview` (local Workers runtime).
+  // Webflow Cloud manages the real deploy target; this is only for local testing.
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "webflow-cloud-webhook-sample",
+  "compatibility_date": "2025-05-20",
+  "compatibility_flags": ["nodejs_compat"],
+  "main": "./dist/_worker.js/index.js",
+  "assets": {
+    "directory": "./dist"
+  },
+  // KV namespace backing the "recent webhooks" list on the homepage.
+  // Declaring it here is all that's needed: Webflow Cloud auto-provisions the
+  // namespace and assigns the real `id` on `webflow cloud deploy`. Locally,
+  // `wrangler dev` treats the `id` as a label (Miniflare simulates the store).
+  // See https://developers.webflow.com/webflow-cloud/storing-data/key-value-store
+  "kv_namespaces": [{"binding": "WEBHOOK_EVENTS", "id": "webhook_events_local"}]
+  // Set the webhook signing secret locally in `.dev.vars` (see .dev.vars.example),
+  // and as a secret/var in the Webflow Cloud project for deployed environments.
+}

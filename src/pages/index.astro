@@ -1,0 +1,136 @@
+---
+import {getRecentWebhooks} from '../lib/recentWebhooks';
+
+// Server-rendered so we can read the recent webhooks from KV on each request.
+export const prerender = false;
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const endpoints = [
+  {name: 'Generic webhook', path: `${base}/api/webhook`},
+  {name: 'CMS content change (Algolia-style)', path: `${base}/api/content-change`},
+];
+
+const kv = Astro.locals.runtime?.env?.WEBHOOK_EVENTS;
+const events = await getRecentWebhooks(kv);
+const kvConfigured = Boolean(kv);
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Webflow Cloud webhook sample</title>
+    <style>
+      body {
+        font-family: ui-sans-serif, system-ui, sans-serif;
+        max-width: 48rem;
+        margin: 3rem auto;
+        padding: 0 1rem;
+        line-height: 1.5;
+      }
+      code {
+        background: #f2f2f2;
+        padding: 0.15rem 0.35rem;
+        border-radius: 4px;
+      }
+      li {
+        margin: 0.5rem 0;
+      }
+      .event {
+        border: 1px solid #e3e3e3;
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+        margin: 0.75rem 0;
+      }
+      .event summary {
+        cursor: pointer;
+        display: flex;
+        gap: 0.5rem;
+        align-items: baseline;
+        flex-wrap: wrap;
+      }
+      .trigger {
+        font-weight: 600;
+      }
+      .meta {
+        color: #666;
+        font-size: 0.85rem;
+      }
+      .badge {
+        font-size: 0.75rem;
+        padding: 0.05rem 0.4rem;
+        border-radius: 999px;
+      }
+      .badge.verified {
+        background: #e6f4ea;
+        color: #1e7d34;
+      }
+      .badge.unverified {
+        background: #fdecea;
+        color: #b3261e;
+      }
+      pre {
+        background: #f7f7f7;
+        padding: 0.75rem;
+        border-radius: 6px;
+        overflow-x: auto;
+        font-size: 0.8rem;
+      }
+      .empty {
+        color: #666;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Webflow Cloud webhook sample</h1>
+    <p>
+      A minimal Webflow Cloud (Astro + Cloudflare) app that receives Webflow
+      webhooks and verifies their HMAC signature.
+    </p>
+
+    <h2>Webhook endpoints</h2>
+    <ul>
+      {
+        endpoints.map((e) => (
+          <li>
+            {e.name}: <code>POST {e.path}</code>
+          </li>
+        ))
+      }
+    </ul>
+
+    <h2>Recent webhooks {events.length > 0 && `(${events.length})`}</h2>
+    {
+      !kvConfigured ? (
+        <p class="empty">
+          The <code>WEBHOOK_EVENTS</code> KV namespace isn't bound, so received
+          webhooks aren't being recorded. Bind it (see <code>README.md</code>)
+          to see deliveries here. Payloads still appear in the Dashboard runtime
+          logs.
+        </p>
+      ) : events.length === 0 ? (
+        <p class="empty">
+          No webhooks received yet. Fire one from Webflow, or{' '}
+          <code>POST</code> to an endpoint above, then refresh.
+        </p>
+      ) : (
+        events.map((event) => (
+          <details class="event">
+            <summary>
+              <span class="trigger">{event.triggerType ?? 'unknown trigger'}</span>
+              <span
+                class={`badge ${event.verified ? 'verified' : 'unverified'}`}
+              >
+                {event.verified ? 'signature verified' : 'unverified'}
+              </span>
+              <span class="meta">
+                {event.endpoint} · {new Date(event.receivedAt).toLocaleString()}
+              </span>
+            </summary>
+            <pre>{JSON.stringify(event.payload, null, 2)}</pre>
+          </details>
+        ))
+      )
+    }
+  </body>
+</html>

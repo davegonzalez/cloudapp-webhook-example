@@ -14,7 +14,15 @@
   // namespace and assigns the real `id` on `webflow cloud deploy`. Locally,
   // `wrangler dev` treats the `id` as a label (Miniflare simulates the store).
   // See https://developers.webflow.com/webflow-cloud/storing-data/key-value-store
-  "kv_namespaces": [{"binding": "WEBHOOK_EVENTS", "id": "webhook_events_local"}]
+  "kv_namespaces": [{"binding": "WEBHOOK_EVENTS", "id": "webhook_events_local"}],
   // Set the webhook signing secret locally in `.dev.vars` (see .dev.vars.example),
   // and as a secret/var in the Webflow Cloud project for deployed environments.
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "my-database",
+      "database_id": "0",
+      "migrations_dir": "drizzle"
+    }
+  ]
 }

@@ -17,11 +17,17 @@
   "kv_namespaces": [{"binding": "WEBHOOK_EVENTS", "id": "webhook_events_local"}],
   // Set the webhook signing secret locally in `.dev.vars` (see .dev.vars.example),
   // and as a secret/var in the Webflow Cloud project for deployed environments.
+  // D1 (SQLite) database. Webflow Cloud provisions the real database and
+  // assigns `database_id` on `webflow cloud deploy`; locally, `wrangler dev`
+  // simulates it. `migrations_dir` tells Webflow Cloud where to find the
+  // Drizzle-generated migrations to apply on deploy.
+  // See https://developers.webflow.com/webflow-cloud/add-sqlite
   "d1_databases": [
     {
       "binding": "DB",
       "database_name": "my-database",
-      "database_id": "0"
+      "database_id": "0",
+      "migrations_dir": "drizzle"
     }
   ]
 }

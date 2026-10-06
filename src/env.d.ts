@@ -8,6 +8,9 @@ interface Env {
    *  homepage. Optional — when unbound, recording is a no-op. Bind it in
    *  wrangler.jsonc (local) and in the Webflow Cloud project (deployed). */
   WEBHOOK_EVENTS?: import("@cloudflare/workers-types").KVNamespace;
+  /** D1 (SQLite) database binding. Declared in wrangler.jsonc; Webflow Cloud
+   *  provisions the real database on deploy. Migrations live in `drizzle/`. */
+  DB?: import("@cloudflare/workers-types").D1Database;
 }
 
 type Runtime = import("@astrojs/cloudflare").Runtime<Env>;

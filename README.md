@@ -107,3 +107,42 @@ The homepage lists the most recent deliveries (newest first, up to 20), each exp
 - After changing bindings, regenerate types with `npx wrangler types`.
 
 The binding is **optional by design**: if it's ever missing, the receivers still return 200 and log to runtime logs — the page just shows a "not bound" notice, and recording is a no-op. Each accepted webhook is stored as `{ receivedAt, endpoint, triggerType, verified, payload }`.
+
+## SQLite database (D1)
+
+The app also ships a minimal **D1 (SQLite)** database with a `users_table`
+(`id`, `name`, `email`), defined with [Drizzle ORM](https://orm.drizzle.team)
+and wired up per the [Add a SQLite database](https://developers.webflow.com/webflow-cloud/add-sqlite)
+guide.
+
+- **Schema**: `src/db/schema/index.ts` — the `usersTable` definition.
+- **Config**: `drizzle.config.ts` — points Drizzle Kit at the schema and writes
+  migrations to `./drizzle`.
+- **Binding**: `DB` in `wrangler.jsonc`, with `"migrations_dir": "drizzle"` so
+  Webflow Cloud applies the migrations on deploy. Webflow Cloud provisions the
+  real database and assigns `database_id` on `webflow cloud deploy`; locally,
+  Wrangler simulates it.
+
+### Local setup
+
+```bash
+npm install
+npm run db:generate      # regenerate migrations after editing the schema
+npm run db:apply:local   # apply migrations to the local D1 database
+npm run db:seed:local    # seed 100 fake users (local only)
+```
+
+`db:seed:local` runs `scripts/generate-seed.mjs` to write `scripts/seed.sql`
+(gitignored) and applies it with `wrangler d1 execute`. Emails embed the row
+index, so all 100 are unique. To seed a deployed database instead, run the
+generator and then `wrangler d1 execute DB --remote --file=./scripts/seed.sql`.
+
+Inspect the local data directly:
+
+```bash
+npx wrangler d1 execute DB --local --command "SELECT * FROM users_table LIMIT 10;"
+```
+
+On deploy, Webflow Cloud applies anything in `drizzle/` automatically; you can
+browse the table under the environment's **Storage** tab in the Webflow Cloud
+dashboard.
